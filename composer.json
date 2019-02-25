@@ -1,0 +1,9 @@
+{
+    "require": {
+        "nikic/php-parser": "^4",
+        "monolog/monolog": "^1.23"
+    },
+    "autoload": {
+      "psr-4": {"Tab2Gettext\\": "src/"}
+    }
+}
