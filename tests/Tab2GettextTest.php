@@ -3,6 +3,8 @@
  * Copyright (c) Enalean, 2019. All Rights Reserved.
  */
 
+declare(strict_types=1);
+
 namespace Tab2Gettext;
 
 use PHPUnit\Framework\TestCase;
@@ -12,17 +14,23 @@ class Tab2GettextTest extends TestCase
 {
     private $fixtures_dir;
     private $expected_dir;
+    /**
+     * @var string
+     */
+    private $cachelangpath;
 
-    public function setUp()
+    public function setUp(): void
     {
         $tmp_dir            = escapeshellarg(sys_get_temp_dir());
         $this->fixtures_dir = exec("mktemp -d -p $tmp_dir tab2gettextXXXXXX");
         $this->expected_dir = __DIR__ . '/_expected';
         $pristine           = __DIR__ . '/_fixtures';
         exec('cp -r ' . escapeshellarg($pristine) . '/* ' . escapeshellarg($this->fixtures_dir) . '/');
+
+        $this->cachelangpath = $this->fixtures_dir . "/cache.en_US.php";
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         exec('rm -rf ' . escapeshellarg($this->fixtures_dir));
     }
@@ -32,10 +40,14 @@ class Tab2GettextTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
 
         $converter = new Tab2Gettext($logger);
-        $converter->run(["", $this->fixtures_dir]);
-        $this->assertEquals(
-            file_get_contents($this->expected_dir . '/Foo.php'),
-            file_get_contents($this->fixtures_dir . '/Foo.php')
+        $converter->run($this->fixtures_dir, "plugin_tracker", "tuleap-tracker", $this->cachelangpath);
+        $this->assertFileEquals(
+            $this->expected_dir . '/plugins/tracker/include/Foo.php',
+            $this->fixtures_dir . '/plugins/tracker/include/Foo.php'
+        );
+        $this->assertFileEquals(
+            $this->expected_dir . '/plugins/docman/include/index.php',
+            $this->fixtures_dir . '/plugins/docman/include/index.php'
         );
     }
 }

@@ -29,39 +29,27 @@ class Tab2Gettext
         $this->logger = $logger;
     }
 
-    public function run(array $argv)
+    public function run($filepath, $primarykey, $domain, $langcachepath)
     {
-        if (! isset($argv[1])) {
-            throw new \RuntimeException("Please provide a file or directory as first parameter");
+        $rii = new FilterPhpFile(
+            new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($filepath),
+                \RecursiveIteratorIterator::SELF_FIRST
+            )
+        );
+        foreach ($rii as $file) {
+            $this->parseAndSave($file->getPathname(), $primarykey, $domain, Dictionary::loadFromCache($langcachepath));
         }
-        $filepath = $argv[1];
-
-        if (is_dir($filepath)) {
-            $rii = new FilterPhpFile(
-                new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($filepath),
-                    \RecursiveIteratorIterator::SELF_FIRST
-                )
-            );
-            foreach ($rii as $file) {
-                $this->parseAndSave($file->getPathname());
-            }
-            return;
-        } elseif (file_exists($filepath)) {
-            $this->parseAndSave($filepath);
-            return;
-        }
-        throw new \RuntimeException("$filepath is neither a file nor a directory");
     }
 
-    private function parseAndSave($path)
+    private function parseAndSave($path, $primarykey, $domain, Dictionary $dictionary)
     {
-        $this->load($path);
+        $this->load($path, $primarykey, $domain, $dictionary);
 //        $this->printStatments();
         $this->save($path);
     }
 
-    public function load($path)
+    public function load($path, $primarykey, $domain, Dictionary $dictionary)
     {
         $this->logger->info("Processing $path");
         $lexer = new Lexer\Emulative([
@@ -71,12 +59,12 @@ class Tab2Gettext
                 'startTokenPos', 'endTokenPos',
             ],
         ]);
-        $parser = new Parser\Php5($lexer);
+        $parser = new Parser\Php7($lexer);
 
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new NodeVisitor\CloningVisitor());
 
-        $traverser->addVisitor(new TabToGettextVisitor($this->logger, $path));
+        $traverser->addVisitor(new TabToGettextVisitor($this->logger, $path, $primarykey, $domain, $dictionary));
 
         $this->oldStmts = $parser->parse(file_get_contents($path));
         $this->oldTokens = $lexer->getTokens();

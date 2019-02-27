@@ -24,11 +24,20 @@ class TabToGettextVisitor extends NodeVisitorAbstract
      * @var string
      */
     private $filepath;
+    private $primarykey;
+    private $domain;
+    /**
+     * @var Dictionary
+     */
+    private $dictionary;
 
-    public function __construct(LoggerInterface $logger, $filepath)
+    public function __construct(LoggerInterface $logger, $filepath, $primarykey, $domain, Dictionary $dictionary)
     {
-        $this->logger   = $logger;
+        $this->logger = $logger;
         $this->filepath = $filepath;
+        $this->primarykey = $primarykey;
+        $this->domain = $domain;
+        $this->dictionary = $dictionary;
     }
 
     /**
@@ -38,13 +47,37 @@ class TabToGettextVisitor extends NodeVisitorAbstract
      */
     public function leaveNode(Node $node)
     {
-        if ($node instanceof Node\Expr\MethodCall && (string) $node->name === 'getText') {
-            return new Node\Expr\FuncCall(
-                new Node\Name('dgettext'), [
-                    new Node\Scalar\String_('tuleap-tracker'),
-                    new Node\Scalar\String_('toto')
-                ]
-            );
+        if (!$node instanceof Node\Expr\MethodCall) {
+            return null;
         }
+
+        if ($node->name instanceof Node\Expr\Variable) {
+            return null;
+        }
+
+        if ((string)$node->name !== 'getText') {
+            return null;
+        }
+
+        if (count($node->args) !== 2) {
+            return null;
+        }
+
+        foreach ($node->args as $arg) {
+            if (!$arg->value instanceof Node\Scalar\String_) {
+                return null;
+            }
+        }
+        if ($node->args[0]->value->value !== $this->primarykey) {
+            return null;
+        }
+        return new Node\Expr\FuncCall(
+            new Node\Name('dgettext'), [
+                new Node\Scalar\String_($this->domain),
+                new Node\Scalar\String_(
+                    $this->dictionary->get($this->primarykey, $node->args[1]->value->value)
+                )
+            ]
+        );
     }
 }

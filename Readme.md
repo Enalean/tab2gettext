@@ -7,13 +7,12 @@ Usage
 -----
 
 ```
-./run.php /path/to/file.php
+./run.php ~/tuleap plugin_tracker tuleap-tracker ~/tuleap/cache.lang.en_US.php
 ```
 
-or
-
-```
-./run.php /path/to/directory/
-```
-
+where:
+* `~/tuleap` is the path to the sources (⚠️ all php files in it will be parsed!)
+* `plugin_tracker` is the primary key
+* `tuleap-tracker` is the target domain
+* `~/tuleap/cache.lang.en_US.php` is the cached file of the en_US strings (can be located in /var/tmp/tuleap_cache)
 
