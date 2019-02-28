@@ -74,17 +74,16 @@ class TabToGettextVisitor extends NodeVisitorAbstract
             return null;
         }
 
-        if (count($node->args) !== 2) {
+        $nb_args = count($node->args);
+        if ($nb_args < 2) {
             return null;
         }
 
-        foreach ($node->args as $arg) {
-            if (!$arg->value instanceof Node\Scalar\String_) {
-                return null;
-            }
+        if (!$node->args[0]->value instanceof Node\Scalar\String_ || $node->args[0]->value->value !== $this->primarykey) {
+            return null;
         }
 
-        if ($node->args[0]->value->value !== $this->primarykey) {
+        if (!$node->args[1]->value instanceof Node\Scalar\String_) {
             return null;
         }
 
@@ -92,13 +91,33 @@ class TabToGettextVisitor extends NodeVisitorAbstract
             $node->args[0]->value->value,
             $node->args[1]->value->value
         );
-        return new Node\Expr\FuncCall(
-            new Node\Name('dgettext'), [
+        $gettext_call = new Node\Expr\FuncCall(
+            new Node\Name('dgettext'),
+            [
                 new Node\Scalar\String_($this->domain),
                 new Node\Scalar\String_(
-                    $this->dictionary->get($this->primarykey, $node->args[1]->value->value)
+                    SprintfSubstitution::convertFromTabFormat(
+                        $this->dictionary->get($this->primarykey, $node->args[1]->value->value)
+                    )
                 )
             ]
+        );
+        if ($nb_args <= 2) {
+            return $gettext_call;
+        }
+
+        $args = [$gettext_call];
+        for ($i = 2; $i < $nb_args; $i++) {
+            if ($node->args[$i]->value instanceof Node\Expr\Array_) {
+                array_push($args, ...($node->args[$i]->value->items));
+            } else {
+                $args[] = $node->args[$i];
+            }
+        }
+
+        return new Node\Expr\FuncCall(
+            new Node\Name('sprintf'),
+            $args
         );
     }
 }

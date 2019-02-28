@@ -3,7 +3,9 @@ return [
     'plugin_tracker' => [
         'descriptor_name' => 'Tracker',
         'descriptor_description' => 'Trackers new generation',
-        'unknown' => 'This entry is not called directly'
+        'unknown' => 'This entry is not called directly',
+        'plugin_allowed_project_title' => '$1 projects restriction',
+        'key_with_two_replacements' => '$2 blah $1'
     ],
     'plugin_docman' => [
         'descriptor_name' => 'Documents'

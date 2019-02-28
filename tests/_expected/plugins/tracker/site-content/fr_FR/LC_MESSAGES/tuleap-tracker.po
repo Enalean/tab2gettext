@@ -8,3 +8,9 @@ msgstr "Outil de suivi"
 msgid "Trackers new generation"
 msgstr "Outils de suivi dernière génération"
 
+msgid "%1$s projects restriction"
+msgstr "Restriction de projet pour %1$s"
+
+msgid "%2$s blah %1$s"
+msgstr "%2$s bla %1$s"
+

@@ -2,3 +2,5 @@
 plugin_tracker	descriptor_name	Tracker
 plugin_tracker	descriptor_description	Trackers new generation
 plugin_tracker	unknown	This entry is not called directly
+plugin_tracker	plugin_allowed_project_title	$1 projects restriction
+plugin_tracker	key_with_two_replacements	$2 blah $1

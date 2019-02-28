@@ -59,17 +59,18 @@ class Tab2GettextTest extends TestCase
         );
 
         $files_to_compare = [
-            '/plugins/tracker/include/Foo.php',
-            '/plugins/tracker/include/Foo.php',
-            '/plugins/docman/include/index.php',
-            '/plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po',
-            '/plugins/tracker/site-content/en_US/tracker.tab',
-            '/plugins/tracker/site-content/fr_FR/tracker.tab'
+            'plugins/tracker/include/Foo.php',
+            'plugins/tracker/include/Foo.php',
+            'plugins/docman/include/index.php',
+            'plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po',
+            'plugins/tracker/site-content/en_US/tracker.tab',
+            'plugins/tracker/site-content/fr_FR/tracker.tab'
         ];
         foreach ($files_to_compare as $file) {
             $this->assertFileEquals(
-                $this->expected_dir . $file,
-                $this->fixtures_dir . $file
+                $this->expected_dir .'/'. $file,
+                $this->fixtures_dir .'/'. $file,
+                "$file is not well generated"
             );
         }
     }

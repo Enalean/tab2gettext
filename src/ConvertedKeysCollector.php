@@ -53,7 +53,7 @@ class ConvertedKeysCollector
         $search  = array('\\',   "\n",  '"');
         $replace = array('\\\\', "\\n", '\\"');
 
-        return str_replace($search, $replace, $string);
+        return str_replace($search, $replace, SprintfSubstitution::convertFromTabFormat($string));
     }
 
     public function purgeTabFile(string $tabfile)

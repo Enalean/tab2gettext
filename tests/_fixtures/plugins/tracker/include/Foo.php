@@ -23,6 +23,12 @@ class trackerPluginDescriptor extends PluginDescriptor {
         parent::__construct($GLOBALS['Language']->getText('plugin_tracker', 'descriptor_name'), false, $GLOBALS['Language']->getText('plugin_tracker', 'descriptor_description'));
         $this->setVersionFromFile(dirname(__FILE__).'/../VERSION');
 
+        // concatenations
+        $GLOBALS['Language']->getText('plugin_tracker', 'plugin_allowed_project_title', array($this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName()));
+        $GLOBALS['Language']->getText('plugin_tracker', 'plugin_allowed_project_title', $this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName());
+        $GLOBALS['Language']->getText('plugin_tracker', 'key_with_two_replacements', $a, $b);
+        $GLOBALS['Language']->getText('plugin_tracker', 'key_with_two_replacements', [$a, $b]);
+
         // ignore such expressions
         $this->$method();
         $this->{$this->method}();
