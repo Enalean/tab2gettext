@@ -24,3 +24,7 @@ where:
 * `~/tuleap/cache.lang.fr_FR.php` is the cached file of the fr_FR strings (can be copied from /var/tmp/tuleap_cache)
 * `~/tuleap/plugins/tracker/site-content` is the target site-content directory (where .po file will be updated)
 * `tracker.tab` is the .tab files name that we need to treat
+
+Then you should run `make generate-po` to sort po entries. Look for 
+warnings as you may end up with duplicated entries (poedit may fix 
+some issues for you).
