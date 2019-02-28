@@ -6,11 +6,11 @@
 namespace Tab2Gettext;
 
 use PhpParser\Lexer;
+use PhpParser\NodeDumper;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinter;
-use PhpParser\NodeDumper;
 use Psr\Log\LoggerInterface;
 
 class Tab2Gettext
@@ -29,8 +29,16 @@ class Tab2Gettext
         $this->logger = $logger;
     }
 
-    public function run($filepath, $primarykey, $domain, $langcachepath)
+    public function run($filepath, $primarykey, $domain, $langcachepath_en, $langcachepath_fr, $target)
     {
+        $pofile = $target . '/fr_FR/LC_MESSAGES/' . $domain . '.po';
+        if (! is_file($pofile)) {
+            throw new \RuntimeException("$pofile does not exist");
+        }
+        $collector = new ConvertedKeysCollector();
+        $dictionary_en = Dictionary::loadFromCache($langcachepath_en);
+        $dictionary_fr = Dictionary::loadFromCache($langcachepath_fr);
+
         $rii = new FilterPhpFile(
             new \RecursiveIteratorIterator(
                 new \RecursiveCallbackFilterIterator(
@@ -44,28 +52,38 @@ class Tab2Gettext
                 ),
                 \RecursiveIteratorIterator::SELF_FIRST
             ),
-            $langcachepath
+            [$langcachepath_en, $langcachepath_fr]
         );
+
         foreach ($rii as $file) {
-            $this->parseAndSave($file->getPathname(), $primarykey, $domain, Dictionary::loadFromCache($langcachepath));
+            $this->parseAndSave(
+                $file->getPathname(),
+                $primarykey,
+                $domain,
+                $dictionary_en,
+                $collector
+            );
         }
+        $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $domain, $pofile);
     }
 
-    private function parseAndSave($path, $primarykey, $domain, Dictionary $dictionary)
+    private function parseAndSave($path, $primarykey, $domain, Dictionary $dictionary_en, ConvertedKeysCollector $collector)
     {
-        $this->load($path, $primarykey, $domain, $dictionary);
+        $this->load($path, $primarykey, $domain, $dictionary_en, $collector);
 //        $this->printStatments();
         $this->save($path);
     }
 
-    public function load($path, $primarykey, $domain, Dictionary $dictionary)
+    public function load($path, $primarykey, $domain, Dictionary $dictionary_en, ConvertedKeysCollector $collector)
     {
         $this->logger->info("Processing $path");
         $lexer = new Lexer\Emulative([
             'usedAttributes' => [
                 'comments',
-                'startLine', 'endLine',
-                'startTokenPos', 'endTokenPos',
+                'startLine',
+                'endLine',
+                'startTokenPos',
+                'endTokenPos',
             ],
         ]);
         $parser = new Parser\Php7($lexer);
@@ -73,7 +91,7 @@ class Tab2Gettext
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new NodeVisitor\CloningVisitor());
 
-        $traverser->addVisitor(new TabToGettextVisitor($this->logger, $path, $primarykey, $domain, $dictionary));
+        $traverser->addVisitor(new TabToGettextVisitor($this->logger, $path, $primarykey, $domain, $dictionary_en, $collector));
 
         $this->oldStmts = $parser->parse(file_get_contents($path));
         $this->oldTokens = $lexer->getTokens();

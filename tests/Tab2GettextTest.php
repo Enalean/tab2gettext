@@ -18,7 +18,11 @@ class Tab2GettextTest extends TestCase
     /**
      * @var string
      */
-    private $cachelangpath;
+    private $cachelangpath_en;
+    /**
+     * @var string
+     */
+    private $cachelangpath_fr;
 
     public function setUp(): void
     {
@@ -28,7 +32,8 @@ class Tab2GettextTest extends TestCase
         $pristine           = __DIR__ . '/_fixtures';
         exec('cp -r ' . escapeshellarg($pristine) . '/* ' . escapeshellarg($this->fixtures_dir) . '/');
 
-        $this->cachelangpath = $this->fixtures_dir . "/cache.en_US.php";
+        $this->cachelangpath_en = $this->fixtures_dir . "/cache.en_US.php";
+        $this->cachelangpath_fr = $this->fixtures_dir . "/cache.fr_FR.php";
     }
 
     public function tearDown(): void
@@ -43,7 +48,14 @@ class Tab2GettextTest extends TestCase
         $logger->shouldReceive('info')->with("Processing $this->fixtures_dir/plugins/docman/include/index.php")->once();
 
         $converter = new Tab2Gettext($logger);
-        $converter->run($this->fixtures_dir, "plugin_tracker", "tuleap-tracker", $this->cachelangpath);
+        $converter->run(
+            $this->fixtures_dir,
+            "plugin_tracker",
+            "tuleap-tracker",
+            $this->cachelangpath_en,
+            $this->cachelangpath_fr,
+            $this->fixtures_dir . '/plugins/tracker/site-content'
+        );
         $this->assertFileEquals(
             $this->expected_dir . '/plugins/tracker/include/Foo.php',
             $this->fixtures_dir . '/plugins/tracker/include/Foo.php'
@@ -51,6 +63,10 @@ class Tab2GettextTest extends TestCase
         $this->assertFileEquals(
             $this->expected_dir . '/plugins/docman/include/index.php',
             $this->fixtures_dir . '/plugins/docman/include/index.php'
+        );
+        $this->assertFileEquals(
+            $this->expected_dir . '/plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po',
+            $this->fixtures_dir . '/plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po'
         );
     }
 }

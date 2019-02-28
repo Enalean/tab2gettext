@@ -30,14 +30,25 @@ class TabToGettextVisitor extends NodeVisitorAbstract
      * @var Dictionary
      */
     private $dictionary;
+    /**
+     * @var ConvertedKeysCollector
+     */
+    private $collector;
 
-    public function __construct(LoggerInterface $logger, $filepath, $primarykey, $domain, Dictionary $dictionary)
-    {
+    public function __construct(
+        LoggerInterface $logger,
+        $filepath,
+        $primarykey,
+        $domain,
+        Dictionary $dictionary,
+        ConvertedKeysCollector $collector
+    ) {
         $this->logger = $logger;
         $this->filepath = $filepath;
         $this->primarykey = $primarykey;
         $this->domain = $domain;
         $this->dictionary = $dictionary;
+        $this->collector = $collector;
     }
 
     /**
@@ -72,9 +83,15 @@ class TabToGettextVisitor extends NodeVisitorAbstract
                 return null;
             }
         }
+
         if ($node->args[0]->value->value !== $this->primarykey) {
             return null;
         }
+
+        $this->collector->add(
+            $node->args[0]->value->value,
+            $node->args[1]->value->value
+        );
         return new Node\Expr\FuncCall(
             new Node\Name('dgettext'), [
                 new Node\Scalar\String_($this->domain),

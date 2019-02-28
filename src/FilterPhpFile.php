@@ -9,12 +9,12 @@ use Iterator;
 
 class FilterPhpFile extends \FilterIterator
 {
-    private $langcachepath;
+    private $exclude_files;
 
-    public function __construct(Iterator $iterator, $langcachepath)
+    public function __construct(Iterator $iterator, $exclude_files)
     {
         parent::__construct($iterator);
-        $this->langcachepath = $langcachepath;
+        $this->exclude_files = $exclude_files;
     }
 
     public function accept()
@@ -32,7 +32,7 @@ class FilterPhpFile extends \FilterIterator
             return false;
         }
 
-        if ($file->getPathname() === $this->langcachepath) {
+        if (in_array($file->getPathname(), $this->exclude_files, true)) {
             return false;
         }
 

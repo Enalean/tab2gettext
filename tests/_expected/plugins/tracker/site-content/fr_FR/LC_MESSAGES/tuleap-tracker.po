@@ -1,0 +1,10 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Tracker"
+msgstr "Outil de suivi"
+
+msgid "Trackers new generation"
+msgstr "Outils de suivi dernière génération"
+

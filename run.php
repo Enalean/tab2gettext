@@ -37,11 +37,21 @@ try {
     $domain = $argv[3];
 
     if (! isset($argv[4]) && ! is_file($argv[4])) {
-        throw new RuntimeException("Please provide a cache lang path as fourth parameter");
+        throw new RuntimeException("Please provide a en_US cache lang path as fourth parameter");
     }
-    $cachelangpath = $argv[4];
+    $cachelangpath_en = $argv[4];
 
-    $reflector->run($filepath, $primarykey, $domain, $cachelangpath);
+    if (! isset($argv[5]) && ! is_file($argv[5])) {
+        throw new RuntimeException("Please provide a fr_FR cache lang path as fifth parameter");
+    }
+    $cachelangpath_fr = $argv[5];
+
+    if (! isset($argv[6]) && ! is_dir($argv[6])) {
+        throw new RuntimeException("Please provide a target site-content directory as sixth parameter");
+    }
+    $target = $argv[6];
+
+    $reflector->run($filepath, $primarykey, $domain, $cachelangpath_en, $cachelangpath_fr, $target);
 } catch (Exception $exception) {
     $log->critical($exception->getMessage());
     exit(1);
