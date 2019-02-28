@@ -22,5 +22,9 @@ class trackerPluginDescriptor extends PluginDescriptor {
     function __construct() {
         parent::__construct(dgettext('tuleap-tracker', 'Tracker'), false, dgettext('tuleap-tracker', 'Trackers new generation'));
         $this->setVersionFromFile(dirname(__FILE__).'/../VERSION');
+
+        // ignore such expressions
+        $this->$method();
+        $this->{$this->method}();
     }
 }

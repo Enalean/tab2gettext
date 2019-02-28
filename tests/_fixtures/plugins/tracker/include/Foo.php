@@ -22,5 +22,9 @@ class trackerPluginDescriptor extends PluginDescriptor {
     function __construct() {
         parent::__construct($GLOBALS['Language']->getText('plugin_tracker', 'descriptor_name'), false, $GLOBALS['Language']->getText('plugin_tracker', 'descriptor_description'));
         $this->setVersionFromFile(dirname(__FILE__).'/../VERSION');
+
+        // ignore such expressions
+        $this->$method();
+        $this->{$this->method}();
     }
 }

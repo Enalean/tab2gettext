@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace Tab2Gettext;
 
+use Mockery;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -37,7 +38,9 @@ class Tab2GettextTest extends TestCase
 
     public function testConversion()
     {
-        $logger = $this->createMock(LoggerInterface::class);
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info')->with("Processing $this->fixtures_dir/plugins/tracker/include/Foo.php")->once();
+        $logger->shouldReceive('info')->with("Processing $this->fixtures_dir/plugins/docman/include/index.php")->once();
 
         $converter = new Tab2Gettext($logger);
         $converter->run($this->fixtures_dir, "plugin_tracker", "tuleap-tracker", $this->cachelangpath);

@@ -5,8 +5,18 @@
 
 namespace Tab2Gettext;
 
+use Iterator;
+
 class FilterPhpFile extends \FilterIterator
 {
+    private $langcachepath;
+
+    public function __construct(Iterator $iterator, $langcachepath)
+    {
+        parent::__construct($iterator);
+        $this->langcachepath = $langcachepath;
+    }
+
     public function accept()
     {
         $file = $this->getInnerIterator()->current();
@@ -16,10 +26,16 @@ class FilterPhpFile extends \FilterIterator
         return false;
     }
 
-    private function fileCanBeSelected($file)
+    private function fileCanBeSelected(\SplFileInfo $file)
     {
-        return (strpos($file->getPathname(), '/_') === false &&
-            (preg_match('/.php$/', $file->getFilename()))
-        );
+        if ($file->getExtension() !== 'php') {
+            return false;
+        }
+
+        if ($file->getPathname() === $this->langcachepath) {
+            return false;
+        }
+
+        return true;
     }
 }

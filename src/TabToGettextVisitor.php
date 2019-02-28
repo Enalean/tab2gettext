@@ -55,6 +55,10 @@ class TabToGettextVisitor extends NodeVisitorAbstract
             return null;
         }
 
+        if ($node->name instanceof Node\Expr\PropertyFetch) {
+            return null;
+        }
+
         if ((string)$node->name !== 'getText') {
             return null;
         }

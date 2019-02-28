@@ -33,9 +33,18 @@ class Tab2Gettext
     {
         $rii = new FilterPhpFile(
             new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($filepath),
+                new \RecursiveCallbackFilterIterator(
+                    new \RecursiveDirectoryIterator($filepath),
+                    function (\SplFileInfo $file, $key, $iterator) {
+                        if ($iterator->hasChildren() && $file->getFilename() !== 'vendor') {
+                            return true;
+                        }
+                        return $file->isFile();
+                    }
+                ),
                 \RecursiveIteratorIterator::SELF_FIRST
-            )
+            ),
+            $langcachepath
         );
         foreach ($rii as $file) {
             $this->parseAndSave($file->getPathname(), $primarykey, $domain, Dictionary::loadFromCache($langcachepath));
