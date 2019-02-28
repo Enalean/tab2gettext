@@ -29,7 +29,7 @@ class Tab2Gettext
         $this->logger = $logger;
     }
 
-    public function run($filepath, $primarykey, $domain, $langcachepath_en, $langcachepath_fr, $target)
+    public function run($filepath, $primarykey, $domain, $langcachepath_en, $langcachepath_fr, $target, $tabfile)
     {
         $pofile = $target . '/fr_FR/LC_MESSAGES/' . $domain . '.po';
         if (! is_file($pofile)) {
@@ -65,6 +65,8 @@ class Tab2Gettext
             );
         }
         $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $domain, $pofile);
+        $collector->purgeTabFile($target . '/en_US/' . $tabfile);
+        $collector->purgeTabFile($target . '/fr_FR/' . $tabfile);
     }
 
     private function parseAndSave($path, $primarykey, $domain, Dictionary $dictionary_en, ConvertedKeysCollector $collector)

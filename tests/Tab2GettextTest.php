@@ -54,19 +54,23 @@ class Tab2GettextTest extends TestCase
             "tuleap-tracker",
             $this->cachelangpath_en,
             $this->cachelangpath_fr,
-            $this->fixtures_dir . '/plugins/tracker/site-content'
+            $this->fixtures_dir . '/plugins/tracker/site-content',
+            'tracker.tab'
         );
-        $this->assertFileEquals(
-            $this->expected_dir . '/plugins/tracker/include/Foo.php',
-            $this->fixtures_dir . '/plugins/tracker/include/Foo.php'
-        );
-        $this->assertFileEquals(
-            $this->expected_dir . '/plugins/docman/include/index.php',
-            $this->fixtures_dir . '/plugins/docman/include/index.php'
-        );
-        $this->assertFileEquals(
-            $this->expected_dir . '/plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po',
-            $this->fixtures_dir . '/plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po'
-        );
+
+        $files_to_compare = [
+            '/plugins/tracker/include/Foo.php',
+            '/plugins/tracker/include/Foo.php',
+            '/plugins/docman/include/index.php',
+            '/plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po',
+            '/plugins/tracker/site-content/en_US/tracker.tab',
+            '/plugins/tracker/site-content/fr_FR/tracker.tab'
+        ];
+        foreach ($files_to_compare as $file) {
+            $this->assertFileEquals(
+                $this->expected_dir . $file,
+                $this->fixtures_dir . $file
+            );
+        }
     }
 }

@@ -28,7 +28,7 @@ class ConvertedKeysCollector
      */
     private $entries = [];
 
-    public function add($primary, $secondary): void
+    public function add(string $primary, string $secondary): void
     {
         if (! isset($this->entries[$primary])) {
             $this->entries[$primary] = [];
@@ -48,11 +48,26 @@ class ConvertedKeysCollector
         }
     }
 
-    private function escape($string)
+    private function escape(string $string): string
     {
         $search  = array('\\',   "\n",  '"');
         $replace = array('\\\\', "\\n", '\\"');
 
         return str_replace($search, $replace, $string);
+    }
+
+    public function purgeTabFile(string $tabfile)
+    {
+        $content = file($tabfile, FILE_IGNORE_NEW_LINES);
+        foreach ($content as $key => $line) {
+            if (substr_count($line, "\t") < 2) {
+                continue;
+            }
+            list($primary, $secondary) = explode("\t", $line);
+            if (isset($this->entries[$primary][$secondary])) {
+                unset($content[$key]);
+            }
+        }
+        file_put_contents($tabfile, implode("\n", $content) . "\n");
     }
 }

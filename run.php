@@ -51,7 +51,12 @@ try {
     }
     $target = $argv[6];
 
-    $reflector->run($filepath, $primarykey, $domain, $cachelangpath_en, $cachelangpath_fr, $target);
+    if (! isset($argv[7]) && ! is_file($argv[6] ."/". $argv[7])) {
+        throw new RuntimeException("Please provide a tab file name as seventh parameter");
+    }
+    $tabfile = $argv[7];
+
+    $reflector->run($filepath, $primarykey, $domain, $cachelangpath_en, $cachelangpath_fr, $target, $tabfile);
 } catch (Exception $exception) {
     $log->critical($exception->getMessage());
     exit(1);
