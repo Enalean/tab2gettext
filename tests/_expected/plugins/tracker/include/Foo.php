@@ -23,6 +23,10 @@ class trackerPluginDescriptor extends PluginDescriptor {
         parent::__construct(dgettext('tuleap-tracker', 'Tracker'), false, dgettext('tuleap-tracker', 'Trackers new generation'));
         $this->setVersionFromFile(dirname(__FILE__).'/../VERSION');
 
+        //duplicated translations
+        dgettext('tuleap-tracker', 'Tracker');
+        dgettext('tuleap-tracker', 'Tracker');
+
         // concatenations
         sprintf(dgettext('tuleap-tracker', '%1$s projects restriction'), $this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName());
         sprintf(dgettext('tuleap-tracker', '%1$s projects restriction'), $this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName());

@@ -44,8 +44,9 @@ class Tab2GettextTest extends TestCase
     public function testConversion()
     {
         $logger = Mockery::mock(LoggerInterface::class);
-        $logger->shouldReceive('info')->with("Processing $this->fixtures_dir/plugins/tracker/include/Foo.php")->once();
-        $logger->shouldReceive('info')->with("Processing $this->fixtures_dir/plugins/docman/include/index.php")->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir/plugins/tracker/include/Foo.php")->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir/plugins/docman/include/index.php")->once();
+        $logger->shouldReceive('error')->with("Duplicated key Tracker")->once();
 
         $converter = new Tab2Gettext($logger);
         $converter->run(

@@ -11,6 +11,9 @@ msgstr "%2$s bla %1$s"
 msgid "Tracker"
 msgstr "Outil de suivi"
 
+msgid "Tracker"
+msgstr "Tracker"
+
 msgid "Trackers new generation"
 msgstr "Outils de suivi dernière génération"
 

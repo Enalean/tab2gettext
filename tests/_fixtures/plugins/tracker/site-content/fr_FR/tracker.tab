@@ -1,5 +1,7 @@
 
 plugin_tracker	descriptor_name	Outil de suivi
+plugin_tracker	name	Tracker
+plugin_tracker	other_name	Outil de suivi
 plugin_tracker_suffix	descriptor_description	Outils de suivi dernière génération
 plugin_tracker	unknown	Jamais appelée
 plugin_tracker	plugin_allowed_project_title	Restriction de projet pour $1

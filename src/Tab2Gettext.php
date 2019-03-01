@@ -35,7 +35,7 @@ class Tab2Gettext
         if (! is_file($pofile)) {
             throw new \RuntimeException("$pofile does not exist");
         }
-        $collector = new ConvertedKeysCollector();
+        $collector = new ConvertedKeysCollector($this->logger);
         $dictionary_en = Dictionary::loadFromCache($langcachepath_en);
         $dictionary_fr = Dictionary::loadFromCache($langcachepath_fr);
 
@@ -64,7 +64,7 @@ class Tab2Gettext
                 $collector
             );
         }
-        $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $domain, $pofile);
+        $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $pofile);
         $collector->purgeTabFile($target . '/en_US/' . $tabfile);
         $collector->purgeTabFile($target . '/fr_FR/' . $tabfile);
     }
@@ -78,7 +78,7 @@ class Tab2Gettext
 
     public function load($path, $primarykey, $domain, Dictionary $dictionary_en, ConvertedKeysCollector $collector)
     {
-        $this->logger->info("Processing $path");
+        $this->logger->debug("Processing $path");
         $lexer = new Lexer\Emulative([
             'usedAttributes' => [
                 'comments',

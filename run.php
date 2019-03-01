@@ -16,7 +16,7 @@ $xdebug->check();
 unset($xdebug);
 
 $log = new Logger('log');
-$log->pushHandler(new ErrorLogHandler());
+$log->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, Logger::INFO));
 
 try {
     $reflector = new Tab2Gettext($log);
