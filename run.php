@@ -8,7 +8,8 @@ require_once 'vendor/autoload.php';
 
 use Composer\XdebugHandler\XdebugHandler;
 use Monolog\Logger;
-use Monolog\Handler\ErrorLogHandler;
+use Monolog\Handler\StreamHandler;
+use \Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Tab2Gettext\Tab2Gettext;
 
 $xdebug = new XdebugHandler('tab2gettext');
@@ -16,7 +17,9 @@ $xdebug->check();
 unset($xdebug);
 
 $log = new Logger('log');
-$log->pushHandler(new ErrorLogHandler(ErrorLogHandler::OPERATING_SYSTEM, Logger::INFO));
+$handler = new StreamHandler('php://stdout', Logger::INFO);
+$handler->setFormatter(new ColoredLineFormatter());
+$log->pushHandler($handler);
 
 try {
     $reflector = new Tab2Gettext($log);

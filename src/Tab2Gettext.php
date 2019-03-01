@@ -55,6 +55,7 @@ class Tab2Gettext
             [$langcachepath_en, $langcachepath_fr]
         );
 
+        $this->logger->info("Starting conversion in .php files…");
         foreach ($rii as $file) {
             $this->parseAndSave(
                 $file->getPathname(),
@@ -64,9 +65,14 @@ class Tab2Gettext
                 $collector
             );
         }
+        $this->logger->info(".php files parsed and converted.");
+        $this->logger->info("Dump localized sentences in .po file $pofile");
         $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $pofile);
+        $this->logger->info("Remove old entries from en_US $tabfile");
         $collector->purgeTabFile($target . '/en_US/' . $tabfile);
+        $this->logger->info("Remove old entries from fr_FR $tabfile");
         $collector->purgeTabFile($target . '/fr_FR/' . $tabfile);
+        $this->logger->info("done");
     }
 
     private function parseAndSave($path, $primarykey, $domain, Dictionary $dictionary_en, ConvertedKeysCollector $collector)
