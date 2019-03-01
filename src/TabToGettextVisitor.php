@@ -79,7 +79,7 @@ class TabToGettextVisitor extends NodeVisitorAbstract
             return null;
         }
 
-        if (!$node->args[0]->value instanceof Node\Scalar\String_ || $node->args[0]->value->value !== $this->primarykey) {
+        if (!$node->args[0]->value instanceof Node\Scalar\String_ || strpos($node->args[0]->value->value, $this->primarykey) !== 0) {
             return null;
         }
 
@@ -97,7 +97,7 @@ class TabToGettextVisitor extends NodeVisitorAbstract
                 new Node\Scalar\String_($this->domain),
                 new Node\Scalar\String_(
                     SprintfSubstitution::convertFromTabFormat(
-                        $this->dictionary->get($this->primarykey, $node->args[1]->value->value)
+                        $this->dictionary->get($node->args[0]->value->value, $node->args[1]->value->value)
                     )
                 )
             ]

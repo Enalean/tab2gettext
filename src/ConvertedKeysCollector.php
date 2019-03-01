@@ -38,14 +38,16 @@ class ConvertedKeysCollector
 
     public function dumpInFrPoFile(Dictionary $dictionary_en, Dictionary $dictionary_fr, string $domain, string $target_po): void
     {
+        $content = [];
         foreach ($this->entries as $primary => $keys) {
             foreach ($keys as $secondary => $nop) {
                 $msgid = $this->escape($dictionary_en->get($primary, $secondary));
                 $msgstr = $this->escape($dictionary_fr->get($primary, $secondary));
-                $poentry = "msgid \"$msgid\"\nmsgstr \"$msgstr\"\n\n";
-                file_put_contents($target_po, $poentry, FILE_APPEND | LOCK_EX);
+                $content[$msgid] = "msgid \"$msgid\"\nmsgstr \"$msgstr\"\n";
             }
         }
+        ksort($content);
+        file_put_contents($target_po, implode("\n", $content) . "\n", FILE_APPEND | LOCK_EX);
     }
 
     private function escape(string $string): string
