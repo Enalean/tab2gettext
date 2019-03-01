@@ -1,4 +1,4 @@
- [![Build Status](https://travis-ci.org/nterray/tab2gettext.svg?branch=master)](https://travis-ci.org/nterray/tab2gettext)
+[![Build Status](https://travis-ci.org/Enalean/tab2gettext.svg?branch=master)](https://travis-ci.org/Enalean/tab2gettext)
 
 .tab to gettext
 ===============
