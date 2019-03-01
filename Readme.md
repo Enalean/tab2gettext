@@ -1,3 +1,5 @@
+ [![Build Status](https://travis-ci.org/nterray/tab2gettext.svg?branch=master)](https://travis-ci.org/nterray/tab2gettext)
+
 .tab to gettext
 ===============
 
