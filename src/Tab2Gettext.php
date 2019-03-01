@@ -56,7 +56,12 @@ class Tab2Gettext
         );
 
         $this->logger->info("Starting conversion in .php files…");
+        $i = 0;
         foreach ($rii as $file) {
+            echo ".";
+            if ($i++ % 80 === 0) {
+                echo "\n";
+            }
             $this->parseAndSave(
                 $file->getPathname(),
                 $primarykey,
@@ -65,6 +70,7 @@ class Tab2Gettext
                 $collector
             );
         }
+        echo "\n";
         $this->logger->info(".php files parsed and converted.");
         $this->logger->info("Dump localized sentences in .po file $pofile");
         $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $pofile);
