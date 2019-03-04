@@ -42,6 +42,7 @@ class Tab2GettextTest extends TestCase
     {
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('info')->with(Mockery::any());
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/tracker/include/BrokenLanguageGettextCall.php')->once();
         $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/tracker/include/Foo.php')->once();
         $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/docman/include/index.php')->once();
         $logger->shouldReceive('error')->with("Duplicated key Tracker")->once();
@@ -58,7 +59,7 @@ class Tab2GettextTest extends TestCase
         );
 
         $files_to_compare = [
-            'plugins/tracker/include/Foo.php',
+            'plugins/tracker/include/BrokenLanguageGettextCall.php',
             'plugins/tracker/include/Foo.php',
             'plugins/docman/include/index.php',
             'plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po',
