@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Tab2Gettext;
 
 use Mockery;
+use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -26,27 +27,23 @@ class Tab2GettextTest extends TestCase
 
     public function setUp(): void
     {
-        $tmp_dir            = escapeshellarg(sys_get_temp_dir());
-        $this->fixtures_dir = exec("mktemp -d -p $tmp_dir tab2gettextXXXXXX");
         $this->expected_dir = __DIR__ . '/_expected';
+        $this->fixtures_dir = vfsStream::setup('/')->url();
         $pristine           = __DIR__ . '/_fixtures';
-        exec('cp -r ' . escapeshellarg($pristine) . '/* ' . escapeshellarg($this->fixtures_dir) . '/');
+        vfsStream::copyFromFileSystem($pristine);
+        unlink($this->fixtures_dir . '/cache.en_US.php');
+        unlink($this->fixtures_dir . '/cache.fr_FR.php');
 
-        $this->cachelangpath_en = $this->fixtures_dir . "/cache.en_US.php";
-        $this->cachelangpath_fr = $this->fixtures_dir . "/cache.fr_FR.php";
+        $this->cachelangpath_en = __DIR__ . '/_fixtures/cache.en_US.php';
+        $this->cachelangpath_fr = __DIR__ . '/_fixtures/cache.fr_FR.php';
     }
 
-    public function tearDown(): void
-    {
-        exec('rm -rf ' . escapeshellarg($this->fixtures_dir));
-    }
-
-    public function testConversion()
+    public function testConversion() : void
     {
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('info')->with(Mockery::any());
-        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir/plugins/tracker/include/Foo.php")->once();
-        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir/plugins/docman/include/index.php")->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/tracker/include/Foo.php')->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/docman/include/index.php')->once();
         $logger->shouldReceive('error')->with("Duplicated key Tracker")->once();
 
         $converter = new Tab2Gettext($logger);

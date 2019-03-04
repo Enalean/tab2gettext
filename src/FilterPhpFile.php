@@ -32,10 +32,6 @@ class FilterPhpFile extends \FilterIterator
             return false;
         }
 
-        if (in_array($file->getPathname(), $this->exclude_files, true)) {
-            return false;
-        }
-
-        return true;
+        return ! in_array($file->getPathname(), $this->exclude_files, true);
     }
 }
