@@ -17,7 +17,6 @@ class trackerPluginDescriptor extends PluginDescriptor {
         sprintf(dgettext('tuleap-tracker', '%1$s projects restriction'), $this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName());
         sprintf(dgettext('tuleap-tracker', '%1$s projects restriction'), $this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName());
         sprintf(dgettext('tuleap-tracker', '%2$s blah %1$s'), $a, $b);
-        sprintf(dgettext('tuleap-tracker', '%2$s blah %1$s'), $a, $b);
 
         // ignore such expressions
         $this->$method();

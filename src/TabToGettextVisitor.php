@@ -91,26 +91,31 @@ class TabToGettextVisitor extends NodeVisitorAbstract
             $node->args[0]->value->value,
             $node->args[1]->value->value
         );
+
+        $sentence_to_translate = $this->dictionary->get($node->args[0]->value->value, $node->args[1]->value->value);
+        $nb_substitutions = SprintfSubstitution::countSubstitutions($sentence_to_translate);
+
+        $sentence = SprintfSubstitution::convertFromTabFormat($sentence_to_translate);
+
         $gettext_call = new Node\Expr\FuncCall(
             new Node\Name('dgettext'),
             [
                 new Node\Scalar\String_($this->domain),
-                new Node\Scalar\String_(
-                    SprintfSubstitution::convertFromTabFormat(
-                        $this->dictionary->get($node->args[0]->value->value, $node->args[1]->value->value)
-                    )
-                )
+                new Node\Scalar\String_($sentence)
             ]
         );
         if ($nb_args <= 2) {
+            $this->checkNbSubstitutions($node, $sentence, $nb_substitutions, 0);
             return $gettext_call;
         }
 
         $args = [$gettext_call];
         for ($i = 2; $i < $nb_args; $i++) {
             if ($node->args[$i]->value instanceof Node\Expr\Array_) {
+                $this->checkNbSubstitutions($node, $sentence, $nb_substitutions, count($node->args[$i]->value->items));
                 array_push($args, ...($node->args[$i]->value->items));
             } else {
+                $this->checkNbSubstitutions($node, $sentence, $nb_substitutions, 1);
                 $args[] = $node->args[$i];
             }
         }
@@ -119,5 +124,13 @@ class TabToGettextVisitor extends NodeVisitorAbstract
             new Node\Name('sprintf'),
             $args
         );
+    }
+
+    private function checkNbSubstitutions(Node $node, string $sentence, int $expected_count, int $actual_count): void
+    {
+        if ($actual_count !== $expected_count) {
+            $line = $node->getAttribute('startLine');
+            throw new MismatchSubstitutionCountException("Expected substitution count differs (expected: $expected_count, actual: $actual_count) for: «${sentence}» in: $this->filepath at L$line");
+        }
     }
 }

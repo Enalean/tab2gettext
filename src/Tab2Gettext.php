@@ -5,20 +5,15 @@
 
 namespace Tab2Gettext;
 
+use OuterIterator;
 use PhpParser\Lexer;
-use PhpParser\NodeDumper;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor;
 use PhpParser\Parser;
-use PhpParser\PrettyPrinter;
 use Psr\Log\LoggerInterface;
 
 class Tab2Gettext
 {
-    private $oldTokens;
-    private $oldStmts;
-    private $newStmts;
-
     /**
      * @var LoggerInterface
      */
@@ -32,37 +27,59 @@ class Tab2Gettext
     public function run($filepath, $primarykey, $domain, $langcachepath_en, $langcachepath_fr, $target, $tabfile)
     {
         $pofile = $target . '/fr_FR/LC_MESSAGES/' . $domain . '.po';
-        if (! is_file($pofile)) {
+        if (!is_file($pofile)) {
             throw new \RuntimeException("$pofile does not exist");
         }
         $collector = new ConvertedKeysCollector($this->logger);
         $dictionary_en = Dictionary::loadFromCache($langcachepath_en);
         $dictionary_fr = Dictionary::loadFromCache($langcachepath_fr);
 
-        $rii = new FilterPhpFile(
-            new \RecursiveIteratorIterator(
-                new \RecursiveCallbackFilterIterator(
-                    new \RecursiveDirectoryIterator($filepath),
-                    function (\SplFileInfo $file, $key, $iterator) {
-                        if ($iterator->hasChildren() && $file->getFilename() !== 'vendor') {
-                            return true;
-                        }
-                        return $file->isFile();
-                    }
-                ),
-                \RecursiveIteratorIterator::SELF_FIRST
-            ),
-            [$langcachepath_en, $langcachepath_fr]
-        );
 
-        $this->logger->info("Starting conversion in .php files…");
+        $this->logger->info("Starting conversion in .php files");
+        try {
+            $files_to_be_saved = $this->parseAllFiles(
+                $this->getFilesIterator($filepath, $langcachepath_en, $langcachepath_fr),
+                $primarykey,
+                $domain,
+                $dictionary_en,
+                $collector
+            );
+            $this->saveFiles($files_to_be_saved);
+
+            $this->logger->info(".php files parsed and converted.");
+            $this->logger->info("Dump localized sentences in .po file $pofile");
+            $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $pofile);
+            $this->logger->info("Remove old entries from en_US $tabfile");
+            $collector->purgeTabFile($target . '/en_US/' . $tabfile);
+            $this->logger->info("Remove old entries from fr_FR $tabfile");
+            $collector->purgeTabFile($target . '/fr_FR/' . $tabfile);
+            $this->logger->info("done");
+        } catch (MismatchSubstitutionCountException $exception) {
+            $this->logger->critical("Mismatch substitution count!");
+            $this->logger->error($exception->getMessage());
+        }
+    }
+
+    /**
+     * @return FileToBeSaved[]
+     */
+    private function parseAllFiles(
+        OuterIterator $files_iterator,
+        string $primarykey,
+        string $domain,
+        Dictionary $dictionary_en,
+        ConvertedKeysCollector $collector
+    ): array {
+        $this->logger->info("Parsing files");
+        $files_to_be_saved = [];
+
         $i = 0;
-        foreach ($rii as $file) {
+        foreach ($files_iterator as $file) {
             echo ".";
             if ($i++ % 80 === 0) {
                 echo "\n";
             }
-            $this->parseAndSave(
+            $files_to_be_saved[] = $this->parse(
                 $file->getPathname(),
                 $primarykey,
                 $domain,
@@ -71,25 +88,34 @@ class Tab2Gettext
             );
         }
         echo "\n";
-        $this->logger->info(".php files parsed and converted.");
-        $this->logger->info("Dump localized sentences in .po file $pofile");
-        $collector->dumpInFrPoFile($dictionary_en, $dictionary_fr, $pofile);
-        $this->logger->info("Remove old entries from en_US $tabfile");
-        $collector->purgeTabFile($target . '/en_US/' . $tabfile);
-        $this->logger->info("Remove old entries from fr_FR $tabfile");
-        $collector->purgeTabFile($target . '/fr_FR/' . $tabfile);
-        $this->logger->info("done");
+
+        return $files_to_be_saved;
     }
 
-    private function parseAndSave($path, $primarykey, $domain, Dictionary $dictionary_en, ConvertedKeysCollector $collector)
+    /**
+     * @param FileToBeSaved[] $files_to_be_saved
+     */
+    private function saveFiles(array $files_to_be_saved): void
     {
-        $this->load($path, $primarykey, $domain, $dictionary_en, $collector);
-//        $this->printStatments();
-        $this->save($path);
+        $this->logger->info("Saving files");
+        $i = 0;
+        foreach ($files_to_be_saved as $file) {
+            echo ".";
+            if ($i++ % 80 === 0) {
+                echo "\n";
+            }
+            $file->save();
+        }
+        echo "\n";
     }
 
-    public function load($path, $primarykey, $domain, Dictionary $dictionary_en, ConvertedKeysCollector $collector)
-    {
+    public function parse(
+        string $path,
+        string $primarykey,
+        string $domain,
+        Dictionary $dictionary_en,
+        ConvertedKeysCollector $collector
+    ): FileToBeSaved {
         $this->logger->debug("Processing $path");
         $lexer = new Lexer\Emulative([
             'usedAttributes' => [
@@ -105,25 +131,35 @@ class Tab2Gettext
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new NodeVisitor\CloningVisitor());
 
-        $traverser->addVisitor(new TabToGettextVisitor($this->logger, $path, $primarykey, $domain, $dictionary_en, $collector));
+        $traverser->addVisitor(new TabToGettextVisitor($this->logger, $path, $primarykey, $domain, $dictionary_en,
+            $collector));
 
-        $this->oldStmts = $parser->parse(file_get_contents($path));
-        $this->oldTokens = $lexer->getTokens();
+        $old_statements = $parser->parse(file_get_contents($path));
+        $old_tokens = $lexer->getTokens();
 
-        $this->newStmts = $traverser->traverse($this->oldStmts);
+        $new_statements = $traverser->traverse($old_statements);
+        return new FileToBeSaved($path, $new_statements, $old_statements, $old_tokens);
     }
 
-    public function printStatments()
-    {
-        $dumper = new NodeDumper;
-        echo $dumper->dump($this->newStmts) . "\n";
-    }
-
-    public function save($path)
-    {
-        $printer = new PrettyPrinter\Standard();
-        $newCode = $printer->printFormatPreserving($this->newStmts, $this->oldStmts, $this->oldTokens);
-
-        file_put_contents($path, $newCode);
+    private function getFilesIterator(
+        string $filepath,
+        string $langcachepath_en,
+        string $langcachepath_fr
+    ): OuterIterator {
+        return new FilterPhpFile(
+            new \RecursiveIteratorIterator(
+                new \RecursiveCallbackFilterIterator(
+                    new \RecursiveDirectoryIterator($filepath),
+                    static function (\SplFileInfo $file, string $key, \RecursiveDirectoryIterator $iterator): bool {
+                        if ($iterator->hasChildren() && $file->getFilename() !== 'vendor') {
+                            return true;
+                        }
+                        return $file->isFile();
+                    }
+                ),
+                \RecursiveIteratorIterator::SELF_FIRST
+            ),
+            [$langcachepath_en, $langcachepath_fr]
+        );
     }
 }
