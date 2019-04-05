@@ -84,9 +84,9 @@ class Tab2GettextTest extends TestCase
     }
 
     /**
-     * @dataProvider mismatchSubstitutionsCodeProvider
+     * @dataProvider codeInErrorProvider
      */
-    public function testConversionIsAbortedIfThereIsAnUnusedSubstitution(string $code)
+    public function testConversionIsAbortedIfThereIsAnError(string $code, string $error_message): void
     {
         $file = 'plugins/tracker/include/File.php';
         file_put_contents(
@@ -107,7 +107,7 @@ class Tab2GettextTest extends TestCase
         $logger->shouldReceive('info');
         $logger->shouldReceive('debug');
         $logger->shouldReceive('error');
-        $logger->shouldReceive('critical')->with("Mismatch substitution count!");
+        $logger->shouldReceive('critical')->with($error_message);
 
         $converter = new Tab2Gettext($logger);
         $converter->run(
@@ -132,11 +132,21 @@ class Tab2GettextTest extends TestCase
         $this->assertFilesAreTheSame($files_to_compare, $expected_dir);
     }
 
-    public function mismatchSubstitutionsCodeProvider(): array
+    public function codeInErrorProvider(): array
     {
         return [
-            ['<?php $Language->getText("plugin_tracker", "plugin_allowed_project_title");'],
-            ['<?php $Language->getText("plugin_tracker", "plugin_allowed_project_title", [$a, $b]);'],
+            [
+                '<?php $Language->getText("plugin_tracker", "plugin_allowed_project_title");',
+                'Mismatch substitution count!'
+            ],
+            [
+                '<?php $Language->getText("plugin_tracker", "plugin_allowed_project_title", [$a, $b]);',
+                'Mismatch substitution count!'
+            ],
+            [
+                '<?php $Language->getText("plugin_tracker", "Secondary key that cannot be found in dictionary");',
+                'Sentence not found!'
+            ],
         ];
     }
 

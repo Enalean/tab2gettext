@@ -57,6 +57,9 @@ class Tab2Gettext
         } catch (MismatchSubstitutionCountException $exception) {
             $this->logger->critical("Mismatch substitution count!");
             $this->logger->error($exception->getMessage());
+        } catch (SentenceNotFoundException $exception) {
+            $this->logger->critical("Sentence not found!");
+            $this->logger->error($exception->getMessage());
         }
     }
 

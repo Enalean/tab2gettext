@@ -87,12 +87,11 @@ class TabToGettextVisitor extends NodeVisitorAbstract
             return null;
         }
 
-        $this->collector->add(
-            $node->args[0]->value->value,
-            $node->args[1]->value->value
-        );
+        $primarykey = $node->args[0]->value->value;
+        $secondarykey = $node->args[1]->value->value;
+        $this->collector->add($primarykey, $secondarykey);
 
-        $sentence_to_translate = $this->dictionary->get($node->args[0]->value->value, $node->args[1]->value->value);
+        $sentence_to_translate = $this->getSentenceToTranslate($node, $primarykey, $secondarykey);
         $nb_substitutions = SprintfSubstitution::countSubstitutions($sentence_to_translate);
 
         $sentence = SprintfSubstitution::convertFromTabFormat($sentence_to_translate);
@@ -129,8 +128,16 @@ class TabToGettextVisitor extends NodeVisitorAbstract
     private function checkNbSubstitutions(Node $node, string $sentence, int $expected_count, int $actual_count): void
     {
         if ($actual_count !== $expected_count) {
-            $line = $node->getAttribute('startLine');
-            throw new MismatchSubstitutionCountException("Expected substitution count differs (expected: $expected_count, actual: $actual_count) for: «${sentence}» in: $this->filepath at L$line");
+            throw new MismatchSubstitutionCountException($expected_count, $actual_count, $sentence, $node, $this->filepath);
+        }
+    }
+
+    private function getSentenceToTranslate(Node $node, string $primary, string $secondary): string
+    {
+        try {
+            return $this->dictionary->get($primary, $secondary);
+        } catch (EntryNotFoundException $exception) {
+            throw new SentenceNotFoundException($primary, $secondary, $node, $this->filepath);
         }
     }
 }
