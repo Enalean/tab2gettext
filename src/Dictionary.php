@@ -2,6 +2,7 @@
 /**
  * Copyright (c) Enalean, 2019. All Rights Reserved.
  */
+declare(strict_types=1);
 
 namespace Tab2Gettext;
 
@@ -22,7 +23,10 @@ class Dictionary
         return new self(include $filepath);
     }
 
-    public function get($primarykey, $secondarykey) {
+    public function get(string $primarykey, string $secondarykey): string {
+        if (! isset($this->entries[$primarykey][$secondarykey])) {
+            throw new EntryNotFoundException();
+        }
         return $this->entries[$primarykey][$secondarykey];
     }
 }
