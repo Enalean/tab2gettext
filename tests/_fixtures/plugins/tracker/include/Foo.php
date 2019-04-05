@@ -16,7 +16,6 @@ class trackerPluginDescriptor extends PluginDescriptor {
         // concatenations
         $GLOBALS['Language']->getText('plugin_tracker', 'plugin_allowed_project_title', array($this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName()));
         $GLOBALS['Language']->getText('plugin_tracker', 'plugin_allowed_project_title', $this->plugin->getPluginInfo()->getPluginDescriptor()->getFullName());
-        $GLOBALS['Language']->getText('plugin_tracker', 'key_with_two_replacements', $a, $b);
         $GLOBALS['Language']->getText('plugin_tracker', 'key_with_two_replacements', [$a, $b]);
 
         // ignore such expressions

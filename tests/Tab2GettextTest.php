@@ -9,6 +9,7 @@ namespace Tab2Gettext;
 
 use Mockery;
 use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\visitor\vfsStreamStructureVisitor;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -24,13 +25,26 @@ class Tab2GettextTest extends TestCase
      * @var string
      */
     private $cachelangpath_fr;
+    /**
+     * @var \org\bovigo\vfs\vfsStreamDirectory
+     */
+    private $fixtures;
+    /**
+     * @var \org\bovigo\vfs\vfsStreamDirectory
+     */
+    private $root;
 
     public function setUp(): void
     {
+        $this->root = vfsStream::setup('/');
+
         $this->expected_dir = __DIR__ . '/_expected';
-        $this->fixtures_dir = vfsStream::setup('/')->url();
-        $pristine           = __DIR__ . '/_fixtures';
-        vfsStream::copyFromFileSystem($pristine);
+
+        $this->fixtures = vfsStream::newDirectory('fixtures');
+        $this->fixtures_dir = $this->fixtures->url();
+        vfsStream::copyFromFileSystem(__DIR__ . '/_fixtures', $this->fixtures);
+        $this->root->addChild($this->fixtures);
+
         unlink($this->fixtures_dir . '/cache.en_US.php');
         unlink($this->fixtures_dir . '/cache.fr_FR.php');
 
@@ -42,9 +56,9 @@ class Tab2GettextTest extends TestCase
     {
         $logger = Mockery::mock(LoggerInterface::class);
         $logger->shouldReceive('info')->with(Mockery::any());
-        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/tracker/include/BrokenLanguageGettextCall.php')->once();
-        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/tracker/include/Foo.php')->once();
-        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . 'plugins/docman/include/index.php')->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/plugins/tracker/include/BrokenLanguageGettextCall.php')->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/plugins/tracker/include/Foo.php')->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/plugins/docman/include/index.php')->once();
         $logger->shouldReceive('error')->with("Duplicated key Tracker")->once();
 
         $converter = new Tab2Gettext($logger);
@@ -66,10 +80,76 @@ class Tab2GettextTest extends TestCase
             'plugins/tracker/site-content/en_US/tracker.tab',
             'plugins/tracker/site-content/fr_FR/tracker.tab'
         ];
+        $this->assertFilesAreTheSame($files_to_compare, $this->expected_dir);
+    }
+
+    /**
+     * @dataProvider mismatchSubstitutionsCodeProvider
+     */
+    public function testConversionIsAbortedIfThereIsAnUnusedSubstitution(string $code)
+    {
+        $file = 'plugins/tracker/include/File.php';
+        file_put_contents(
+            $this->fixtures_dir . '/' . $file,
+            $code
+        );
+
+        $expected = vfsStream::newDirectory('expected');
+        $this->root->addChild($expected);
+
+        $expected_dir = $expected->url();
+        vfsStream::create(
+            vfsStream::inspect(new vfsStreamStructureVisitor(), $this->fixtures)->getStructure()['fixtures'],
+            $expected
+        );
+
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info');
+        $logger->shouldReceive('debug');
+        $logger->shouldReceive('error');
+        $logger->shouldReceive('critical')->with("Mismatch substitution count!");
+
+        $converter = new Tab2Gettext($logger);
+        $converter->run(
+            $this->fixtures_dir,
+            "plugin_tracker",
+            "tuleap-tracker",
+            $this->cachelangpath_en,
+            $this->cachelangpath_fr,
+            $this->fixtures_dir . '/plugins/tracker/site-content',
+            'tracker.tab'
+        );
+
+        $files_to_compare = [
+            $file,
+            'plugins/tracker/include/BrokenLanguageGettextCall.php',
+            'plugins/tracker/include/Foo.php',
+            'plugins/docman/include/index.php',
+            'plugins/tracker/site-content/fr_FR/LC_MESSAGES/tuleap-tracker.po',
+            'plugins/tracker/site-content/en_US/tracker.tab',
+            'plugins/tracker/site-content/fr_FR/tracker.tab'
+        ];
+        $this->assertFilesAreTheSame($files_to_compare, $expected_dir);
+    }
+
+    public function mismatchSubstitutionsCodeProvider(): array
+    {
+        return [
+            ['<?php $Language->getText("plugin_tracker", "plugin_allowed_project_title");'],
+            ['<?php $Language->getText("plugin_tracker", "plugin_allowed_project_title", [$a, $b]);'],
+        ];
+    }
+
+    /**
+     * @param string[] $files_to_compare
+     * @param string $expected_dir
+     */
+    private function assertFilesAreTheSame(array $files_to_compare, string $expected_dir): void
+    {
         foreach ($files_to_compare as $file) {
             $this->assertFileEquals(
-                $this->expected_dir .'/'. $file,
-                $this->fixtures_dir .'/'. $file,
+                $expected_dir . '/' . $file,
+                $this->fixtures_dir . '/' . $file,
                 "$file is not well generated"
             );
         }
