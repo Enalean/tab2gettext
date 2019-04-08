@@ -62,6 +62,7 @@ class Tab2GettextTest extends TestCase
         $logger->shouldReceive('error')->with("Duplicated key Tracker")->once();
 
         $converter = new Tab2Gettext($logger);
+        $this->expectOutputRegex('/\.+/m');
         $converter->run(
             $this->fixtures_dir,
             "plugin_tracker",
@@ -110,6 +111,7 @@ class Tab2GettextTest extends TestCase
         $logger->shouldReceive('critical')->with($error_message);
 
         $converter = new Tab2Gettext($logger);
+        $this->expectOutputRegex('/\.+/m');
         $converter->run(
             $this->fixtures_dir,
             "plugin_tracker",
