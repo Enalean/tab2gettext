@@ -11,12 +11,12 @@ Usage
 ```
 php index.php tab2gettext \
     --src-dir $HOME/tuleap \
-    --primary-key plugin_tracker
+    --primary-key plugin_tracker \
     --domain tuleap-tracker \
     --en-cache /tmp/cache.lang.en_US.php \
     --fr-cache /tmp/cache.lang.fr_FR.php \
     --target-dir $HOME/tuleap/plugins/tracker/site-content \
-    --src-tab tracker.tab \
+    --src-tab tracker.tab
 ```
 
 where:
