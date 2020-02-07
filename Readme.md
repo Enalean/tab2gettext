@@ -31,3 +31,15 @@ where:
 Then you should run `make generate-po` to sort po entries. Look for 
 warnings as you may end up with duplicated entries (poedit may fix 
 some issues for you).
+
+⚠️ Legacy usage of getText may prevent conversion of .tab. For example there may be variables or concatenation in primary/secondary keys. There is a command to help you detect such usage:
+
+```
+php index.php broken-gettext-usage \
+    --src-dir $HOME/tuleap/plugins/tracker/include \
+    --primary-key plugin_tracker
+```
+
+where:
+* `$HOME/tuleap/plugins/tracker/include` is the path to the sources (⚠️ all php files in it will be parsed!)
+* `plugin_tracker` is the primary key. It is optional, if omitted all detected broken usage will be returned.

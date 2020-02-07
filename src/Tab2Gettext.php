@@ -149,20 +149,6 @@ class Tab2Gettext
         string $langcachepath_en,
         string $langcachepath_fr
     ): OuterIterator {
-        return new FilterPhpFile(
-            new \RecursiveIteratorIterator(
-                new \RecursiveCallbackFilterIterator(
-                    new \RecursiveDirectoryIterator($filepath),
-                    static function (\SplFileInfo $file, string $key, \RecursiveDirectoryIterator $iterator): bool {
-                        if ($iterator->hasChildren() && $file->getFilename() !== 'vendor') {
-                            return true;
-                        }
-                        return $file->isFile();
-                    }
-                ),
-                \RecursiveIteratorIterator::SELF_FIRST
-            ),
-            [$langcachepath_en, $langcachepath_fr]
-        );
+        return FilterPhpFile::self($filepath, [$langcachepath_en, $langcachepath_fr]);
     }
 }

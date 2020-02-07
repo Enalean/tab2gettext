@@ -17,6 +17,25 @@ class FilterPhpFile extends \FilterIterator
         $this->exclude_files = $exclude_files;
     }
 
+    public static function self(string $filepath, array $exclude_files): \OuterIterator
+    {
+        return new FilterPhpFile(
+            new \RecursiveIteratorIterator(
+                new \RecursiveCallbackFilterIterator(
+                    new \RecursiveDirectoryIterator($filepath),
+                    static function (\SplFileInfo $file, string $key, \RecursiveDirectoryIterator $iterator): bool {
+                        if ($iterator->hasChildren() && $file->getFilename() !== 'vendor') {
+                            return true;
+                        }
+                        return $file->isFile();
+                    }
+                ),
+                \RecursiveIteratorIterator::SELF_FIRST
+            ),
+            $exclude_files
+        );
+    }
+
     public function accept()
     {
         $file = $this->getInnerIterator()->current();

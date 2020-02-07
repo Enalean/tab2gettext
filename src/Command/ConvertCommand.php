@@ -5,21 +5,19 @@
 
 declare(strict_types=1);
 
-namespace Tab2Gettext;
+namespace Tab2Gettext\Command;
 
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Composer\XdebugHandler\XdebugHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
-use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Tab2Gettext\Tab2Gettext;
 
 class ConvertCommand extends Command
 {
@@ -36,7 +34,7 @@ class ConvertCommand extends Command
     protected function configure()
     {
         $this
-            ->setDescription('convert tab to gettext')
+            ->setDescription('Convert tab to gettext')
             ->setHelp(<<<EOS
                 This will parse a directory to convert some .tab entries to gettext file.
                 It will populate fr.po files and will remove legacy getText call in the code.
@@ -123,7 +121,7 @@ class ConvertCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $xdebug = new XdebugHandler('tab2gettext');
+        $xdebug = new XdebugHandler(self::$defaultName);
         $xdebug->check();
         unset($xdebug);
 
