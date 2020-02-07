@@ -134,7 +134,7 @@ class Tab2Gettext
         $traverser = new NodeTraverser();
         $traverser->addVisitor(new NodeVisitor\CloningVisitor());
 
-        $traverser->addVisitor(new TabToGettextVisitor($this->logger, $path, $primarykey, $domain, $dictionary_en,
+        $traverser->addVisitor(new TabToGettextVisitor($path, $primarykey, $domain, $dictionary_en,
             $collector));
 
         $old_statements = $parser->parse(file_get_contents($path));

@@ -8,6 +8,7 @@ namespace Tab2Gettext;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class SimpleTestToMockeryVisitor
@@ -16,10 +17,6 @@ use Psr\Log\LoggerInterface;
  */
 class TabToGettextVisitor extends NodeVisitorAbstract
 {
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
     /**
      * @var string
      */
@@ -36,14 +33,12 @@ class TabToGettextVisitor extends NodeVisitorAbstract
     private $collector;
 
     public function __construct(
-        LoggerInterface $logger,
         $filepath,
         $primarykey,
         $domain,
         Dictionary $dictionary,
         ConvertedKeysCollector $collector
     ) {
-        $this->logger = $logger;
         $this->filepath = $filepath;
         $this->primarykey = $primarykey;
         $this->domain = $domain;
