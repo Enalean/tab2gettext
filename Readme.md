@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Enalean/tab2gettext.svg?branch=master)](https://travis-ci.org/Enalean/tab2gettext)
+[![Build Status](https://github.com/Enalean/tab2gettext/workflows/CI/badge.svg)](https://github.com/Enalean/tab2gettext/actions)
 
 .tab to gettext
 ===============
