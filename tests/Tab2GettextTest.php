@@ -52,6 +52,33 @@ class Tab2GettextTest extends TestCase
         $this->cachelangpath_fr = __DIR__ . '/_fixtures/cache.fr_FR.php';
     }
 
+    public function testConversionInCore() : void
+    {
+        $logger = Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info')->with(Mockery::any());
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/core/www/cvs.php')->once();
+
+        $converter = new Tab2Gettext($logger);
+        $this->expectOutputRegex('/\.+/m');
+        $converter->run(
+            $this->fixtures_dir . '/core',
+            "cvs",
+            "tuleap-core",
+            $this->cachelangpath_en,
+            $this->cachelangpath_fr,
+            $this->fixtures_dir . '/core/site-content',
+            'cvs/cvs.tab'
+        );
+
+        $files_to_compare = [
+            'core/www/cvs.php',
+            'core/site-content/fr_FR/LC_MESSAGES/tuleap-core.po',
+            'core/site-content/en_US/cvs/cvs.tab',
+            'core/site-content/fr_FR/cvs/cvs.tab'
+        ];
+        $this->assertFilesAreTheSame($files_to_compare, $this->expected_dir);
+    }
+
     public function testConversion() : void
     {
         $logger = Mockery::mock(LoggerInterface::class);
@@ -59,6 +86,7 @@ class Tab2GettextTest extends TestCase
         $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/plugins/tracker/include/BrokenLanguageGettextCall.php')->once();
         $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/plugins/tracker/include/Foo.php')->once();
         $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/plugins/docman/include/index.php')->once();
+        $logger->shouldReceive('debug')->with("Processing $this->fixtures_dir" . '/core/www/cvs.php')->once();
         $logger->shouldReceive('error')->with("Duplicated key Tracker")->once();
 
         $converter = new Tab2Gettext($logger);

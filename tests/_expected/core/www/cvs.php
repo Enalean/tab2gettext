@@ -1,0 +1,3 @@
+<?php
+
+_('CVS introduction');

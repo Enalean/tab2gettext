@@ -1,5 +1,8 @@
 <?php
 return [
+    'cvs' => [
+        'intro' => 'CVS introduction',
+    ],
     'plugin_tracker' => [
         'descriptor_name' => 'Tracker',
         'name' => 'Tracker',

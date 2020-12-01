@@ -91,13 +91,18 @@ class TabToGettextVisitor extends NodeVisitorAbstract
 
         $sentence = SprintfSubstitution::convertFromTabFormat($sentence_to_translate);
 
-        $gettext_call = new Node\Expr\FuncCall(
-            new Node\Name('dgettext'),
-            [
-                new Node\Scalar\String_($this->domain),
-                new Node\Scalar\String_($sentence)
-            ]
-        );
+        $gettext_call = $this->domain === 'tuleap-core'
+            ? new Node\Expr\FuncCall(
+                    new Node\Name('_'),
+                    [new Node\Scalar\String_($sentence)]
+                )
+            : new Node\Expr\FuncCall(
+                    new Node\Name('dgettext'),
+                    [
+                        new Node\Scalar\String_($this->domain),
+                        new Node\Scalar\String_($sentence)
+                    ]
+                );
         if ($nb_args <= 2) {
             $this->checkNbSubstitutions($node, $sentence, $nb_substitutions, 0);
             return $gettext_call;
