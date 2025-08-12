@@ -11,19 +11,19 @@ on:
 jobs:
   tests:
     name: Tests on PHP ${{ matrix.php }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        php: ['7.3', '7.4', '8.0']
+        php: ['8.4']
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-      - uses: shivammathur/setup-php@2.32.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@20529878ed81ef8e78ddf08b480401e6101a850f # 2.35.3
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-      - name: Remove Composer lockfile
-        run: rm composer.lock
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
       - name: Configure PHPUnit matchers
